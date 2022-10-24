@@ -1,0 +1,29 @@
+on:
+  push:
+    - main
+
+jobs:
+  build:
+    name: Build images
+    strategy:
+      matrix:
+        image:
+          - pipenv
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to ghcr
+        run: echo ${GITHUB_TOKEN} | docker login ghcr.io -u obsequey --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build images
+        run: |
+          docker build . \
+            -f ${{ matrix.image }}.Dockerfile \
+            -t ghcr.io/obsequey/${{ matrix.image }}
+
+      - name: Publish images
+        run: docker push ghcr.io/obsequey/${{ matrix.image }}
+
+
